@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Village Business Tycoon</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(160deg,#102a43,#1f7a5a);
+  color:white;
+  min-height:100vh;
+}
+
+.game{
+  width:100%;
+  max-width:500px;
+  margin:auto;
+  padding:15px;
+}
+
+h1{
+  text-align:center;
+  margin:8px 0 15px;
+  font-size:28px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.stat{
+  background:rgba(255,255,255,.12);
+  border-radius:15px;
+  padding:14px;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,.2);
+}
+
+.stat b{
+  display:block;
+  font-size:22px;
+  margin-top:5px;
+}
+
+.card{
+  background:rgba(255,255,255,.12);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.2);
+}
+
+.business{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.icon{
+  font-size:42px;
+}
+
+.info{
+  flex:1;
+}
+
+.info h2{
+  margin:0 0 5px;
+  font-size:19px;
+}
+
+.info p{
+  margin:4px 0;
+  font-size:13px;
+  opacity:.85;
+}
+
+button{
+  width:100%;
+  border:0;
+  border-radius:13px;
+  padding:14px;
+  margin-top:10px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  background:#ffd54a;
+  color:#18202a;
+}
+
+button:active{
+  transform:scale(.97);
+}
+
+button:disabled{
+  background:#777;
+  color:#ccc;
+}
+
+.progress{
+  height:12px;
+  background:rgba(0,0,0,.3);
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:10px;
+}
+
+.progress div{
+  height:100%;
+  width:0%;
+  background:#ffd54a;
+  transition:.3s;
+}
+
+.message{
+  text-align:center;
+  min-height:25px;
+  font-weight:bold;
+  margin:8px;
+}
+
+.small{
+  text-align:center;
+  opacity:.7;
+  font-size:12px;
+}
+
+.reset{
+  background:#e85d5d;
+  color:white;
+}
+
+@media(max-width:360px){
+  h1{font-size:23px}
+  .icon{font-size:34px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+<h1>🏡 Village Business Tycoon</h1>
+
+<div class="stats">
+  <div class="stat">
+    💰 Coins
+    <b id="coins">100</b>
+  </div>
+
+  <div class="stat">
+    ⭐ Level
+    <b id="level">1</b>
+  </div>
+
+  <div class="stat">
+    📈 Income
+    <b id="income">0/s</b>
+  </div>
+
+  <div class="stat">
+    🏆 XP
+    <b id="xp">0</b>
+  </div>
+</div>
+
+<div class="card">
+  <h2>🎯 Mission</h2>
+  <p id="mission">Earn 500 coins</p>
+
+  <div class="progress">
+    <div id="missionBar"></div>
+  </div>
+
+  <button onclick="collectMission()">🎁 Collect Mission Reward</button>
+</div>
+
+<div class="card">
+
+  <div class="business">
+    <div class="icon">☕</div>
+
+    <div class="info">
+      <h2>Tea Shop</h2>
+      <p>Level: <span id="teaLevel">0</span></p>
+      <p>Income: <span id="teaIncome">0</span> coins/sec</p>
+    </div>
+  </div>
+
+  <button onclick="buyBusiness('tea')">
+    Upgrade Tea Shop — <span id="teaCost">50</span> 💰
+  </button>
+
+</div>
+
+<div class="card">
+
+  <div class="business">
+    <div class="icon">🥬</div>
+
+    <div class="info">
+      <h2>Vegetable Farm</h2>
+      <p>Level: <span id="farmLevel">0</span></p>
+      <p>Income: <span id="farmIncome">0</span> coins/sec</p>
+    </div>
+  </div>
+
+  <button onclick="buyBusiness('farm')">
+    Upgrade Farm — <span id="farmCost">200</span> 💰
+  </button>
+
+</div>
+
+<div class="card">
+
+  <div class="business">
+    <div class="icon">🍛</div>
+
+    <div class="info">
+      <h2>Village Restaurant</h2>
+      <p>Level: <span id="restaurantLevel">0</span></p>
+      <p>Income: <span id="restaurantIncome">0</span> coins/sec</p>
+    </div>
+  </div>
+
+  <button onclick="buyBusiness('restaurant')">
+    Upgrade Restaurant — <span id="restaurantCost">750</span> 💰
+  </button>
+
+</div>
+
+<div class="card">
+
+  <h2>🎁 Daily Bonus</h2>
+  <p>Claim a free coin bonus once every day.</p>
+
+  <button onclick="dailyBonus()">🎁 Claim Bonus</button>
+
+</div>
+
+<div class="card">
+
+  <button onclick="manualWork()">👨‍🌾 Work & Earn 25 Coins</button>
+
+  <button onclick="saveGame()">💾 Save Game</button>
+
+  <button onclick="loadGame()">📂 Load Game</button>
+
+  <button class="reset" onclick="resetGame()">🔄 Reset Game</button>
+
+</div>
+
+<div class="message" id="message"></div>
+
+<p class="small">
+Virtual coins only. This game does not give real money.
+</p>
+
+</div>
+
+<script>
+
+let game = {
+  coins:100,
+  xp:0,
+  level:1,
+
+  tea:{
+    level:0,
+    cost:50,
+    income:2
+  },
+
+  farm:{
+    level:0,
+    cost:200,
+    income:8
+  },
+
+  restaurant:{
+    level:0,
+    cost:750,
+    income:30
+  },
+
+  missionClaimed:false,
+  lastBonus:0
+};
+
+
+// -----------------------------
+// UPDATE SCREEN
+// -----------------------------
+
+function updateScreen(){
+
+  document.getElementById("coins").textContent =
+    Math.floor(game.coins);
+
+  document.getElementById("xp").textContent =
+    game.xp;
+
+  document.getElementById("level").textContent =
+    game.level;
+
+  document.getElementById("teaLevel").textContent =
+    game.tea.level;
+
+  document.getElementById("farmLevel").textContent =
+    game.farm.level;
+
+  document.getElementById("restaurantLevel").textContent =
+    game.restaurant.level;
+
+  document.getElementById("teaCost").textContent =
+    game.tea.cost;
+
+  document.getElementById("farmCost").textContent =
+    game.farm.cost;
+
+  document.getElementById("restaurantCost").textContent =
+    game.restaurant.cost;
+
+  let teaIncome =
+    game.tea.level * game.tea.income;
+
+  let farmIncome =
+    game.farm.level * game.farm.income;
+
+  let restaurantIncome =
+    game.restaurant.level * game.restaurant.income;
+
+  let totalIncome =
+    teaIncome + farmIncome + restaurantIncome;
+
+  document.getElementById("teaIncome").textContent =
+    teaIncome;
+
+  document.getElementById("farmIncome").textContent =
+    farmIncome;
+
+  document.getElementById("restaurantIncome").textContent =
+    restaurantIncome;
+
+  document.getElementById("income").textContent =
+    totalIncome + "/s";
+
+
+  // Mission progress
+
+  let progress =
+    Math.min((game.coins / 500) * 100,100);
+
+  document.getElementById("missionBar").style.width =
+    progress + "%";
+
+  if(game.coins >= 500){
+    document.getElementById("mission").textContent =
+      "Mission completed! Claim your reward.";
+  }else{
+    document.getElementById("mission").textContent =
+      "Earn 500 coins";
+  }
+
+}
+
+
+// -----------------------------
+// BUY BUSINESS
+// -----------------------------
+
+function buyBusiness(type){
+
+  let business = game[type];
+
+  if(game.coins < business.cost){
+
+    showMessage("❌ Not enough coins!");
+
+    return;
+  }
+
+  game.coins -= business.cost;
+
+  business.level++;
+
+  business.cost =
+    Math.floor(business.cost * 1.6);
+
+  game.xp += 20;
+
+  checkLevel();
+
+  updateScreen();
+
+  saveGame();
+
+  showMessage("✅ Business upgraded!");
+}
+
+
+// -----------------------------
+// MANUAL WORK
+// -----------------------------
+
+function manualWork(){
+
+  game.coins += 25;
+
+  game.xp += 5;
+
+  checkLevel();
+
+  updateScreen();
+
+  showMessage("💰 You earned 25 coins!");
+
+  saveGame();
+}
+
+
+// -----------------------------
+// LEVEL SYSTEM
+// -----------------------------
+
+function checkLevel(){
+
+  let requiredXP =
+    game.level * 100;
+
+  if(game.xp >= requiredXP){
+
+    game.xp -= requiredXP;
+
+    game.level++;
+
+    showMessage(
+      "🎉 Level Up! You are now Level " +
+      game.level
+    );
+  }
+}
+
+
+// -----------------------------
+// MISSION
+// -----------------------------
+
+function collectMission(){
+
+  if(game.coins < 500){
+
+    showMessage(
+      "❌ You need 500 coins first!"
+    );
+
+    return;
+  }
+
+  if(game.missionClaimed){
+
+    showMessage(
+      "✅ Mission already collected!"
+    );
+
+    return;
+  }
+
+  game.coins += 500;
+
+  game.xp += 50;
+
+  game.missionClaimed = true;
+
+  checkLevel();
+
+  updateScreen();
+
+  saveGame();
+
+  showMessage(
+    "🎁 Mission reward: +500 coins!"
+  );
+}
+
+
+// -----------------------------
+// DAILY BONUS
+// -----------------------------
+
+function dailyBonus(){
+
+  let today =
+    new Date().toDateString();
+
+  if(game.lastBonus === today){
+
+    showMessage(
+      "⏰ Daily bonus already claimed!"
+    );
+
+    return;
+  }
+
+  game.coins += 250;
+
+  game.xp += 10;
+
+  game.lastBonus = today;
+
+  checkLevel();
+
+  updateScreen();
+
+  saveGame();
+
+  showMessage(
+    "🎁 Daily Bonus: +250 coins!"
+  );
+}
+
+
+// -----------------------------
+// INCOME SYSTEM
+// -----------------------------
+
+setInterval(function(){
+
+  let income =
+
+    (game.tea.level * game.tea.income) +
+
+    (game.farm.level * game.farm.income) +
+
+    (game.restaurant.level *
+     game.restaurant.income);
+
+  game.coins += income;
+
+  updateScreen();
+
+},1000);
+
+
+// -----------------------------
+// SAVE GAME
+// -----------------------------
+
+function saveGame(){
+
+  localStorage.setItem(
+    "villageBusinessGame",
+    JSON.stringify(game)
+  );
+
+}
+
+
+// -----------------------------
+// LOAD GAME
+// -----------------------------
+
+function loadGame(){
+
+  let saved =
+    localStorage.getItem(
+      "villageBusinessGame"
+    );
+
+  if(saved){
+
+    game = JSON.parse(saved);
+
+    updateScreen();
+
+    showMessage(
+      "📂 Game loaded successfully!"
+    );
+
+  }else{
+
+    showMessage(
+      "❌ No saved game found."
+    );
+  }
+}
+
+
+// -----------------------------
+// RESET GAME
+// -----------------------------
+
+function resetGame(){
+
+  let confirmReset =
+    confirm(
+      "Are you sure you want to reset the game?"
+    );
+
+  if(!confirmReset){
+    return;
+  }
+
+  localStorage.removeItem(
+    "villageBusinessGame"
+  );
+
+  location.reload();
+}
+
+
+// -----------------------------
+// MESSAGE
+// -----------------------------
+
+function showMessage(text){
+
+  let message =
+    document.getElementById("message");
+
+  message.textContent = text;
+
+  setTimeout(function(){
+
+    message.textContent = "";
+
+  },2500);
+}
+
+
+// -----------------------------
+// AUTO LOAD
+// -----------------------------
+
+window.onload = function(){
+
+  let saved =
+    localStorage.getItem(
+      "villageBusinessGame"
+    );
+
+  if(saved){
+
+    try{
+
+      game = JSON.parse(saved);
+
+    }catch(error){
+
+      console.log(
+        "Save data error"
+      );
+
+    }
+
+  }
+
+  updateScreen();
+
+};
+
+</script>
+
+</body>
+</html>
+// Village Business Tycoon - Basic JavaScript
+
+let coins = 100;
+let level = 1;
+let teaShopLevel = 0;
+let teaShopCost = 50;
+
+// Update the screen
+function updateGame() {
+    document.getElementById("coins").textContent = coins;
+    document.getElementById("level").textContent = level;
+    document.getElementById("teaLevel").textContent = teaShopLevel;
+    document.getElementById("teaCost").textContent = teaShopCost;
+}
+
+// Earn coins by clicking
+function earnCoins() {
+    coins += 10;
+
+    // Level up every 100 coins
+    level = Math.floor(coins / 100) + 1;
+
+    updateGame();
+}
+
+// Upgrade Tea Shop
+function upgradeTeaShop() {
+
+    if (coins >= teaShopCost) {
+
+        coins -= teaShopCost;
+
+        teaShopLevel++;
+
+        // Increase cost after every upgrade
+        teaShopCost = Math.floor(teaShopCost * 1.5);
+
+        updateGame();
+
+        alert("Tea Shop upgraded! ☕");
+
+    } else {
+
+        alert("Not enough coins! 💰");
+    }
+}
+
+// Automatically earn coins from Tea Shop
+setInterval(function () {
+
+    if (teaShopLevel > 0) {
+
+        coins += teaShopLevel;
+
+        updateGame();
+    }
+
+}, 1000);
+
+// Start the game
+updateGame();<div>💰 Coins: <span id="coins">100</span></div>
+
+<div>⭐ Level: <span id="level">1</span></div>
+
+<div>☕ Tea Shop Level:
+    <span id="teaLevel">0</span>
+</div>
+
+<div>Upgrade Cost:
+    <span id="teaCost">50</span>
+</div>
+
+<button onclick="earnCoins()">
+    💰 Earn Coins
+</button>
+
+<button onclick="upgradeTeaShop()">
+    ☕ Upgrade Tea Shop
+</button>
